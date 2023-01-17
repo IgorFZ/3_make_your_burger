@@ -1,5 +1,5 @@
 <template>
-    <p>Message</p>
+    <Message :msg="msg"  v-show="msg"/>
     <div>
         <form id="burger-form" @submit="createBurger">
             <div class="details-order">
@@ -37,7 +37,11 @@
 </template>
 
 <script>
-export default {
+import Message from "./Message.vue"
+
+export default 
+  {
+    components: { Message },
     name: "Form",
     data() {
         return {
@@ -48,22 +52,50 @@ export default {
             pao: null,
             carne: null,
             opcionais: [],
-            status: "Solicitado",
             msg: null
         }
     },
     methods: {
         async getIngredientes() {
-            const req = await fetch("http://localhost:3000/ingredientes");
-            const data = await req.json();
+            const req = await fetch("http://localhost:3000/ingredientes")
+            const data = await req.json()
 
-            this.paes = data.paes;
-            this.carnes = data.carnes;
-            this.opcionaisdata = data.opcionais;
+            this.paes = data.paes
+            this.carnes = data.carnes
+            this.opcionaisdata = data.opcionais
         },
-        createBurger(e) {
-            e.preventDefault();
+        async createBurger(e) {
+
+            e.preventDefault()
             
+            const data = {
+                name: this.name,
+                carne: this.carne,
+                pao: this.pao,
+                opcionais: Array.from(this.opcionais),
+                status: "Solicitado"
+            }
+            
+            const dataJson = JSON.stringify(data)
+            
+            const req = await fetch("http://localhost:3000/burgers", {
+                method: "POST",
+                headers: { "Content-Type" : "application/json" },
+                body: dataJson
+            });
+
+            const res = await req.json()
+
+            console.log(res)
+
+            this.msg = "Pedido realizado com sucesso!"
+            // clear message
+            setTimeout(() => this.msg = "", 3000)
+            // limpar campos
+            this.name = ""
+            this.carne = ""
+            this.pao = ""
+            this.opcionais = []
         }
     },
     mounted() {
